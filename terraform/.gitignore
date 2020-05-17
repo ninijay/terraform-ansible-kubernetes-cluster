@@ -1,0 +1,5 @@
+*.env
+.terraform
+volume_pool
+*.iso
+*.tfstate

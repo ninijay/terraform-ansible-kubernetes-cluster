@@ -1,0 +1,18 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: create the 'zanidd' user
+      user: name=zanidd append=yes state=present createhome=yes shell=/bin/bash
+    - name: allow 'zanidd' to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: 'zanidd ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+    - name: set up authorized keys for the 'zanidd' user
+      authorized_key: user=zanidd key="{{item}}"
+      with_file:
+        - ~/.ssh/id_rsa.pub
+    - name: disable swap
+      shell: swapoff -a
+      args:
+        chdir: $HOME

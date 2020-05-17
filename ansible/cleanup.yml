@@ -1,0 +1,13 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: cleanup kubernetes stuff
+      shell: kubeadm reset && apt-get purge kubeadm kubectl kubelet kubernetes-cni kube* && apt-get autoremove && rm -rf ~/.kube
+      args:
+        chdir: $HOME
+    - name: cleanup kubernetes stuff for zanidd
+      become: yes
+      become_user: zanidd
+      shell: rm -rf ~/.kube
+      args:
+        chdir: $HOME
