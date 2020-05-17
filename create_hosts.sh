@@ -1,5 +1,6 @@
 #!/bin/bash
 workernodes=2
+masternodes=1
 template=../hosts.tmpl
 hosts="$(terraform output --json)"
 hostfile=../hosts

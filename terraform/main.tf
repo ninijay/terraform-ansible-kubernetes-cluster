@@ -3,6 +3,9 @@ locals {
   masternodes = 1
   workernodes = 2
   subnet_node_prefix = "172.16.1"
+  domain = "k8s.local"
+  initialUser = "zanidd"
+  initialPW = "zanidd"
 }
 
 provider libvirt {
@@ -53,6 +56,8 @@ data template_file master_user_data {
     public_key = data.template_file.public_key.rendered
     hostname = "kube-master"
     kube_version = local.kube_version
+    user = local.initialUser
+    pw = local.initialPW
   }
 }
 
@@ -63,6 +68,8 @@ data template_file worker_user_data {
     public_key = data.template_file.public_key.rendered
     hostname = "kube-node${count.index}"
     kube_version = local.kube_version
+    user = local.initialUser
+    pw = local.initialPW
   }
 }
 
@@ -103,7 +110,7 @@ resource libvirt_cloudinit_disk workernodes {
 resource libvirt_network kube_node_network {
   name      = "kube_nodes"
   mode      = "nat"
-  domain    = "k8s.local"
+  domain    = local.domain
   autostart = true
   addresses = ["${local.subnet_node_prefix}.0/24"]
   dns {
@@ -138,7 +145,7 @@ resource libvirt_domain k8s_masters {
     network_id     = libvirt_network.kube_node_network.id
     hostname       = "kube-master"
     addresses      = ["${local.subnet_node_prefix}.1${count.index+1}"]
-    #wait_for_lease = true
+    wait_for_lease = true
   }
 
   disk {
@@ -170,7 +177,7 @@ resource libvirt_domain k8s_workers {
     network_id     = libvirt_network.kube_node_network.id
     hostname       = "kube-node${count.index}"
     addresses      = ["${local.subnet_node_prefix}.2${count.index + 1}"]
-    #wait_for_lease = true
+    wait_for_lease = true
   }
 
   disk {
