@@ -66,11 +66,30 @@ data template_file worker_user_data {
   }
 }
 
+data "template_file" "master_network_config" {
+  template = file("${path.module}/network_config.cfg")
+  count = local.masternodes
+  vars = {
+    ip = "${local.subnet_node_prefix}.1${count.index+1}"
+    gateway = "${local.subnet_node_prefix}.1"
+  }
+}
+
+data "template_file" "worker_network_config" {
+  template = file("${path.module}/network_config.cfg")
+  count = local.workernodes
+  vars = {
+    ip = "${local.subnet_node_prefix}.2${count.index+1}"
+    gateway = "${local.subnet_node_prefix}.1"
+  }
+}
+
 resource libvirt_cloudinit_disk masternodes {
   count = local.masternodes
   name = "cloudinit_master_resized_${count.index}.iso"
   pool = libvirt_pool.local.name
   user_data = data.template_file.master_user_data[count.index].rendered
+  network_config = data.template_file.master_network_config[count.index].rendered
 }
 
 resource libvirt_cloudinit_disk workernodes {
@@ -78,6 +97,7 @@ resource libvirt_cloudinit_disk workernodes {
   name = "cloudinit_worker_resized_${count.index}.iso"
   pool = libvirt_pool.local.name
   user_data = data.template_file.worker_user_data[count.index].rendered
+  network_config = data.template_file.worker_network_config[count.index].rendered
 }
 
 resource libvirt_network kube_node_network {
@@ -118,7 +138,7 @@ resource libvirt_domain k8s_masters {
     network_id     = libvirt_network.kube_node_network.id
     hostname       = "kube-master"
     addresses      = ["${local.subnet_node_prefix}.1${count.index+1}"]
-    wait_for_lease = true
+    #wait_for_lease = true
   }
 
   disk {
@@ -150,7 +170,7 @@ resource libvirt_domain k8s_workers {
     network_id     = libvirt_network.kube_node_network.id
     hostname       = "kube-node${count.index}"
     addresses      = ["${local.subnet_node_prefix}.2${count.index + 1}"]
-    wait_for_lease = true
+    #wait_for_lease = true
   }
 
   disk {
