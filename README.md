@@ -1,5 +1,11 @@
 # Terraform+Ansible+LIBVIRT Kubernetes Cluster
 
+## Makefile does not work
+
+Run terraform,
+create hosts file manually
+run ansible
+
 ## dependencies
 - libvirt-provider for terraform
 - terraform
