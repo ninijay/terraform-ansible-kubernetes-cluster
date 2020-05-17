@@ -2,4 +2,5 @@
 .terraform
 volume_pool
 *.iso
-*.tfstate
+*.tfstate*
+*.terraform*
